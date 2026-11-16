@@ -264,11 +264,16 @@ nav.menu button.off{opacity:.45}
       var est = p.resposta === 'sim' ? 'vai' : (p.resposta === 'nao' ? 'não vai' : 'sem resposta');
       return '<span class="assento ' + cls + '" title="' + esc(p.nome) + '" aria-label="' + esc(p.nome) + ': ' + est + '">' + esc(p.iniciais) + '</span>';
     }).join('');
+    var souLider = d.eu.funcao === 'lider' && d.lider;
     var papeis = d.papeis.map(function (p, i) {
+      var quem = souLider
+        ? '<select class="sel" data-papel="' + esc(p.papel) + '" aria-label="Quem faz ' + esc(p.papel) + '" style="height:42px;font-size:15px;margin-top:6px"><option value="">— escolher —</option>' +
+          d.lider.membros.map(function (m) { return '<option value="' + esc(m.id) + '"' + (m.id === p.membro_id ? ' selected' : '') + '>' + esc(m.nome) + '</option>'; }).join('') + '</select>'
+        : '<span style="font-size:13px" class="muted">' + (p.nome ? esc(p.nome) : 'definido pelo líder') + '</span>';
+      var tag = p.meu ? '<span class="tag" style="background:var(--ink);color:var(--lime)">VOCÊ</span>' : (p.nome || souLider ? '' : '<span class="tag" style="border:1.5px dashed var(--ink)">A DEFINIR</span>');
       return '<div class="lista-linha"><span class="mono-s muted" style="width:20px">0' + (i + 1) + '</span>' +
         '<div class="col grow"><span style="font-size:15px;font-weight:700">' + esc(p.papel) + (p.papel === 'Louvor' ? ' <span class="muted" style="font-weight:500;font-size:13px">· 3 músicas</span>' : '') + '</span>' +
-        '<span style="font-size:13px" class="muted">' + (p.nome ? esc(p.nome) : 'definido pelo líder') + '</span></div>' +
-        (p.meu ? '<span class="tag" style="background:var(--ink);color:var(--lime)">VOCÊ</span>' : (p.nome ? '' : '<span class="tag" style="border:1.5px dashed var(--ink)">A DEFINIR</span>')) + '</div>';
+        quem + '</div>' + tag + '</div>';
     }).join('');
     var listaLanche = d.lanche.map(function (x) {
       return '<div class="row" style="font-size:13px;gap:6px;padding:3px 0"><b>' + esc(primeiroNome(x.nome)) + '</b><span class="muted">' + esc([x.comida, x.bebida].filter(Boolean).join(' + ')) + '</span></div>';
@@ -283,7 +288,7 @@ nav.menu button.off{opacity:.45}
       '<div class="assentos">' + assentos + '</div>' +
       '<span class="mono-s" style="color:#A3A3A3">Verde: vai · tracejado: sem resposta · riscado: não vai</span>' +
       botoesPresenca(d, true) + '</div>' +
-      '<div class="col"><div class="between" style="border-bottom:2px solid var(--ink);padding-bottom:6px"><span class="display" style="font-size:26px">Roteiro da noite</span><span class="mono-s">Definido pelo líder</span></div>' + papeis +
+      '<div class="col"><div class="between" style="border-bottom:2px solid var(--ink);padding-bottom:6px"><span class="display" style="font-size:26px">Roteiro da noite</span><span class="mono-s">' + (souLider ? 'Você escolhe quem faz' : 'Definido pelo líder') + '</span></div>' + papeis +
       '<div class="lista-linha" style="flex-direction:column;align-items:stretch;gap:8px;padding:10px 0">' +
       '<div class="row"><span class="mono-s muted" style="width:20px">05</span><div class="col grow"><span style="font-size:15px;font-weight:700">Lanche comunitário</span>' +
       '<span style="font-size:13px" class="muted">Cada um leva 1 comida + 1 bebida (casal leva junto) · ' + plural(comidas, 'comida') + ', ' + plural(bebidas, 'bebida') + ' até agora</span></div></div>' +
