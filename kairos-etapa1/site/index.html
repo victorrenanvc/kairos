@@ -127,7 +127,9 @@ nav.menu button.off{opacity:.45}
   function saudacao() { var h = new Date().getHours(); return h < 12 ? 'bom dia' : (h < 18 ? 'boa tarde' : 'boa noite'); }
   function plural(n, p) { return n + ' ' + p + (n === 1 ? '' : 's'); }
   function primeiroNome(n) { return String(n).trim().split(/\s+/)[0]; }
-  function horaCurta(h) { return String(h || '20:00').replace(':00', 'h').replace(':', 'h'); }
+  var MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  function horaCurta(h) { var m = String(h || '').match(/(\d{1,2}):(\d{2})/); if (!m) return '20h'; return Number(m[1]) + 'h' + (m[2] === '00' ? '' : m[2]); }
+  function dataTitulo(iso, hora) { var p = String(iso).split('-'); return DIAS_LONGO[diaSemana(iso)] + ' ' + p[2] + ' ' + MESES[Number(p[1]) - 1] + ' ' + p[0] + ' ' + horaCurta(hora); }
 
   var IC = {
     casa: '<path d="M3 11l9-7 9 7v10h-6v-6H9v6H3z"></path>',
@@ -272,8 +274,8 @@ nav.menu button.off{opacity:.45}
       return '<div class="row" style="font-size:13px;gap:6px;padding:3px 0"><b>' + esc(primeiroNome(x.nome)) + '</b><span class="muted">' + esc([x.comida, x.bebida].filter(Boolean).join(' + ')) + '</span></div>';
     }).join('');
     return '<div class="tela">' +
-      '<div class="between"><span class="mono">Encontro · ' + dataLonga(d.encontro.data) + '</span><span class="mono">' + esc(d.gc.bairro) + '</span></div>' +
-      '<div style="position:relative"><h1 class="display" style="font-size:66px">' + DIAS_LONGO[r.dia] + ' ' + esc(horaCurta(d.gc.hora)) + '</h1>' +
+      '<div class="between"><span class="mono">Encontro da semana</span><span class="mono">' + esc(d.gc.bairro) + '</span></div>' +
+      '<div style="position:relative"><h1 class="display" style="font-size:54px;line-height:.92">' + esc(dataTitulo(d.encontro.data, d.gc.hora)) + '</h1>' +
       (r.meu ? '<span class="sticker" style="position:absolute;right:0;bottom:-30px;transform:rotate(-6deg);background:var(--red);color:#fff">SEU PAPEL: ' + esc(r.meu.papel.toUpperCase()) + '</span>' : '') + '</div>' +
       '<span style="font-size:15px;font-weight:600">' + esc(d.gc.local) + '</span>' +
       '<div class="bloco-preto"><div class="between" style="align-items:flex-end"><span class="mono lime">Lista de presença · quem vai</span>' +
