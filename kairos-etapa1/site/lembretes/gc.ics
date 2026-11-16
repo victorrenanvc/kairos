@@ -1,0 +1,22 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kairos GC//PT-BR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:gc@kairos-gc
+DTSTAMP:20261116T120000Z
+DTSTART:20261118T100000Z
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=WE
+SUMMARY:Kairós · Hoje tem GC às 20h
+DESCRIPTION:Hoje tem GC na casa da Laíse. Marque sua presença e o seu la
+ nche no app: https://victorrenanvc.github.io/kairos/
+URL:https://victorrenanvc.github.io/kairos/
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Kairós · Hoje tem GC às 20h
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
