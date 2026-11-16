@@ -1,0 +1,22 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kairos GC//PT-BR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:palavra@kairos-gc
+DTSTAMP:20261116T120000Z
+DTSTART:20261117T100000Z
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Kairós · Palavra do dia
+DESCRIPTION:Abra o app do Kairós e leia a Palavra de hoje: https://victor
+ renanvc.github.io/kairos/
+URL:https://victorrenanvc.github.io/kairos/
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Kairós · Palavra do dia
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
