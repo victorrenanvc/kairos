@@ -648,8 +648,14 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
         }).join('') + '</div>' : '') +
       '<div class="caixa"><span class="mono">Duplas de oração · homens com homens, mulheres com mulheres</span>' +
       (L.duplas.length ? L.duplas.map(function (g) { return '<span style="font-size:14px;font-weight:600">' + g.map(esc).join(' + ') + '</span>'; }).join('') : '<span class="muted">Precisa de 2 pessoas ou mais.</span>') + '</div>' +
-      (L.honrado.nome ? '<div class="caixa"><span class="mono">Honrado: ' + esc(L.honrado.nome) + ' · ' + plural(L.honrado.enviaram, 'palavra') + '</span>' +
-        (L.honrado.faltam.length ? '<span style="font-size:13px;font-weight:600;line-height:1.4">Faltam escrever: ' + L.honrado.faltam.map(esc).join(', ') + '</span>' : '<span style="font-weight:600">Todo mundo já escreveu!</span>') + '</div>' : '') +
+      '<div class="caixa"><span class="mono">Honrado da quinzena · entrega ' + DIAS[diaSemana(L.honrado.entrega)] + ' ' + dataBR(L.honrado.entrega) + '</span>' +
+        (L.honrado.nome
+          ? '<span style="font-size:18px;font-weight:800">' + esc(L.honrado.nome) + (L.honrado.motivo === 'aniversario' ? ' <span class="tag" style="background:var(--lime)">ANIVERSÁRIO</span>' : '') + '</span>' +
+            '<span class="mono-s">' + plural(L.honrado.enviaram, 'palavra') + ' até agora</span>' +
+            (L.honrado.faltam.length ? '<span style="font-size:13px;font-weight:600;line-height:1.4">Faltam escrever: ' + L.honrado.faltam.map(esc).join(', ') + '</span>' : '<span style="font-weight:600">Todo mundo já escreveu!</span>')
+          : '<span style="font-size:14px;font-weight:600">Ainda não sorteado.</span>') +
+        (!L.honrado.enviaram ? '<button class="btn btn-ink" data-acao="sortear-honrado">' + (L.honrado.nome ? 'Sortear de novo' : 'Sortear honrado') + '</button>' +
+          '<span class="mono-s muted">Aniversariante da quinzena tem prioridade. Depois que alguém escreve, o sorteio trava.</span>' : '') + '</div>' +
       '<div class="caixa"><span class="mono">Alguém esqueceu o código?</span>' +
       '<div class="row"><select class="sel grow" id="sel-codigo"><option value="">Escolha a pessoa</option>' + L.membros.map(function (m) { return '<option value="' + esc(m.id) + '">' + esc(m.nome) + '</option>'; }).join('') + '</select>' +
       '<button class="btn btn-ink" data-acao="trocar-codigo">Gerar</button></div>' +
@@ -778,6 +784,7 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
         d.lider.chamada.lista.forEach(function (m) { if (m.id === id) m.veio = !atual; });
       }, null);
     },
+    'sortear-honrado': function () { acaoPainel('sortear_honrado', {}, 'Honrado sorteado!'); },
     'definir-genero': function (el) { acaoPainel('genero', { id: el.dataset.id, genero: el.dataset.v }, 'Salvo. As duplas já foram refeitas.'); },
     ir: function (el) { S.tela = el.dataset.tela; S.codigo = null; render(); window.scrollTo(0, 0); atualizarAoNavegar(); },
     sair: function () { sair(); },
