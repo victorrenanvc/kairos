@@ -267,6 +267,11 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
       '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' +
       '<label class="campo"><span class="mono">WhatsApp</span><input name="whatsapp" type="tel" autocomplete="tel" placeholder="(62) 9…" value="' + esc(c.whatsapp) + '"></label>' +
       '<label class="campo"><span class="mono">Aniversário</span><input name="aniversario" inputmode="numeric" placeholder="DD/MM" maxlength="5" data-mascara="ddmm" value="' + esc(c.aniversario) + '"></label></div>' +
+      '<div class="campo"><span class="mono">Você é</span><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' +
+      [['h', 'Homem'], ['m', 'Mulher']].map(function (o) {
+        var on = c.genero === o[0];
+        return '<button type="button" class="btn ' + (on ? 'btn-lime' : '') + '" style="border:2px solid var(--ink);' + (on ? '' : 'background:#fff') + '" data-acao="genero-cad" data-v="' + o[0] + '" aria-pressed="' + on + '">' + o[1] + '</button>';
+      }).join('') + '</div><span class="mono-s muted">Para as duplas de oração: homens com homens, mulheres com mulheres.</span></div>' +
       '<div class="campo"><span class="mono">Você é casado(a)?</span><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' +
       ['sim', 'nao'].map(function (v) {
         var on = c.casado === v;
@@ -537,6 +542,7 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
       '<label class="btn btn-line grow" style="height:44px;font-size:12px">Galeria<input class="oculto" type="file" accept="image/*" data-foto="1"></label></div>' +
       '<label class="campo"><span class="mono-s">WhatsApp</span><input name="whatsapp" type="tel" value="' + esc(p.whatsapp) + '"></label>' +
       '<label class="campo"><span class="mono-s">Aniversário (DD/MM)</span><input name="aniversario" inputmode="numeric" maxlength="5" data-mascara="ddmm" value="' + esc(p.aniversario) + '"></label>' +
+      '<label class="campo"><span class="mono-s">Você é</span><select name="genero"><option value="">—</option><option value="h"' + (p.genero === 'h' ? ' selected' : '') + '>Homem</option><option value="m"' + (p.genero === 'm' ? ' selected' : '') + '>Mulher</option></select></label>' +
       '<label class="campo"><span class="mono-s">Famoso no lanche por</span><input name="prato" maxlength="60" value="' + esc(p.prato) + '" placeholder="ex.: bolo de cenoura"></label>' +
       '<div class="row"><button class="btn btn-ink grow" type="submit">Salvar</button><button class="btn btn-line" type="button" data-acao="editar">Cancelar</button></div></form>' : '';
     return '<div class="tela sem-nav" style="padding-top:0">' +
@@ -619,7 +625,13 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
       '<div class="caixa"><span class="mono">Papéis de ' + DIAS_LONGO[r.dia].toLowerCase() + ', ' + dataBR(d.encontro.data) + '</span>' +
       '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">' + selects + '</div></div>' +
       (semResp.length ? '<div class="caixa"><span class="mono">Ainda não responderam a presença</span><span style="font-size:14px;font-weight:600;line-height:1.5">' + semResp.map(function (x) { return esc(x.nome); }).join(', ') + '</span></div>' : '') +
-      '<div class="caixa"><span class="mono">Duplas de oração · rodada ' + L.rodada.rodada + ', semana ' + L.rodada.semana + '/' + L.rodada.semanas + '</span>' +
+      (L.membros.some(function (m) { return !m.genero; }) ? '<div class="caixa" style="background:#fff"><span class="mono">Para as duplas: homem ou mulher?</span>' +
+        L.membros.filter(function (m) { return !m.genero; }).map(function (m) {
+          return '<div class="between" style="gap:6px"><span style="font-size:14px;font-weight:700">' + esc(m.nome) + '</span><div class="row" style="gap:6px">' +
+            '<button class="btn btn-line btn-p" data-acao="definir-genero" data-id="' + esc(m.id) + '" data-v="h">Homem</button>' +
+            '<button class="btn btn-line btn-p" data-acao="definir-genero" data-id="' + esc(m.id) + '" data-v="m">Mulher</button></div></div>';
+        }).join('') + '</div>' : '') +
+      '<div class="caixa"><span class="mono">Duplas de oração · homens com homens, mulheres com mulheres</span>' +
       (L.duplas.length ? L.duplas.map(function (g) { return '<span style="font-size:14px;font-weight:600">' + g.map(esc).join(' + ') + '</span>'; }).join('') : '<span class="muted">Precisa de 2 pessoas ou mais.</span>') + '</div>' +
       (L.honrado.nome ? '<div class="caixa"><span class="mono">Honrado: ' + esc(L.honrado.nome) + ' · ' + plural(L.honrado.enviaram, 'palavra') + '</span>' +
         (L.honrado.faltam.length ? '<span style="font-size:13px;font-weight:600;line-height:1.4">Faltam escrever: ' + L.honrado.faltam.map(esc).join(', ') + '</span>' : '<span style="font-weight:600">Todo mundo já escreveu!</span>') + '</div>' : '') +
@@ -744,6 +756,8 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
     'ir-cadastro': function () { S.modo = 'cadastro'; S.erro = ''; render(); },
     'ir-entrar': function () { S.modo = 'entrar'; S.erro = ''; S.nomes = null; render(); },
     casado: function (el) { lerCadastro(); S.cad.casado = el.dataset.v; render(); },
+    'genero-cad': function (el) { lerCadastro(); S.cad.genero = el.dataset.v; render(); },
+    'definir-genero': function (el) { acaoPainel('genero', { id: el.dataset.id, genero: el.dataset.v }, 'Salvo. As duplas já foram refeitas.'); },
     ir: function (el) { S.tela = el.dataset.tela; S.codigo = null; render(); window.scrollTo(0, 0); atualizarAoNavegar(); },
     sair: function () { sair(); },
     li: function () {
@@ -863,7 +877,7 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
     } else if (tipo === 'cadastro') {
       lerCadastro();
       S.ocupado = true; S.erro = ''; render();
-      api('cadastrar', { nome: v.nome, whatsapp: v.whatsapp, aniversario: v.aniversario, casado: S.cad.casado, conjugeId: v.conjugeId || '', pin: v.pin }).then(function (d) {
+      api('cadastrar', { nome: v.nome, whatsapp: v.whatsapp, aniversario: v.aniversario, casado: S.cad.casado, genero: S.cad.genero || '', conjugeId: v.conjugeId || '', pin: v.pin }).then(function (d) {
         S.ocupado = false; S.cad = { casado: 'nao' };
         if (d.status === 'ativo') { S.token = d.token; guardar('kairos_token', d.token); S.tela = 'inicio'; render(); carregarPainel(); toast('Perfil criado. Você é o líder do GC.'); }
         else { S.modo = 'aguardando'; render(); }
@@ -880,7 +894,7 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
       acaoPainel('missao', { texto: v.texto }, 'Missão lançada para o GC.', function () { S.rasc.missao = null; });
     } else if (tipo === 'perfil') {
       S.ocupado = true;
-      api('perfil_salvar', { whatsapp: v.whatsapp, aniversario: v.aniversario, prato: v.prato }).then(function (p) {
+      api('perfil_salvar', { whatsapp: v.whatsapp, aniversario: v.aniversario, prato: v.prato, genero: v.genero }).then(function (p) {
         S.ocupado = false; S.perfil = p; S.editando = false; render(); toast('Perfil salvo!'); carregarPainel(true);
       }, function (err) { S.ocupado = false; toast(err.message); });
     }
