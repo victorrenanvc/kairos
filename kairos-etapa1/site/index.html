@@ -344,6 +344,9 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
       '<span class="mono">Chama do GC</span><span class="display" style="font-size:52px">' + j.porcento + '<span style="font-size:26px">%</span></span>' +
       '<span class="barra" style="display:block"><span style="width:' + j.porcento + '%"></span></span>' +
       '<span style="font-size:11px;font-weight:600;line-height:1.25">' + j.total + ' de ' + j.meta + ' pontos na semana</span></button></div>' +
+      (d.staff && d.staff.lista.length ? '<div class="caixa" style="position:relative' + (d.staff.souEu ? ';background:var(--lime)' : '') + '"><span class="mono">Staff do culto · ' + DIAS[diaSemana(d.staff.data)] + ' ' + dataBR(d.staff.data) + '</span>' +
+        (d.staff.souEu ? '<span class="sticker" style="position:absolute;right:10px;top:-14px;transform:rotate(4deg);background:var(--ink);color:var(--lime)">VOCÊ SERVE</span>' : '') +
+        '<span style="font-size:15px;font-weight:700;line-height:1.4">' + d.staff.lista.map(function (x) { return esc(x.nome); }).join(', ') + '</span></div>' : '') +
       (d.missao ? '<div class="caixa"><span class="mono">Missão da semana · ' + plural(d.missao.quantos, 'cumpriu', 'cumpriram') + '</span>' +
         '<span style="font-size:16px;font-weight:700;line-height:1.35">' + esc(d.missao.texto) + '</span>' +
         '<button class="btn ' + (d.missao.feita ? 'btn-line' : 'btn-ink') + '" data-acao="missao-feita">' + (d.missao.feita ? 'Cumpri ✓ (desfazer)' : 'Cumpri a missão · +3') + '</button></div>' : '') +
@@ -590,6 +593,18 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
   }
 
   /* ---------- Líder ---------- */
+  function staffHtml(st, membros) {
+    if (!st) return '';
+    var sel = {};
+    st.lista.forEach(function (x) { sel[x.id] = true; });
+    return '<div class="caixa" style="background:#fff"><div class="between"><span class="mono">Staff do culto · ' + DIAS[diaSemana(st.data)] + ' ' + dataBR(st.data) + '</span><span class="display" style="font-size:28px">' + st.lista.length + '</span></div>' +
+      '<span style="font-size:13px;font-weight:600;line-height:1.4" class="muted">Toque em quem vai servir. Aparece no Início de todos e no resumo do WhatsApp.</span>' +
+      '<div class="row" style="flex-wrap:wrap;gap:6px">' + membros.map(function (m) {
+        var on = !!sel[m.id];
+        return '<button class="btn btn-p ' + (on ? 'btn-lime' : 'btn-line') + '" style="text-transform:none;' + (on ? 'border:2px solid var(--ink)' : '') + '" data-acao="staff" data-id="' + esc(m.id) + '" aria-pressed="' + on + '">' + (on ? '✓ ' : '') + esc(primeiroNome(m.nome)) + '</button>';
+      }).join('') + '</div></div>';
+  }
+
   function chamadaHtml(c) {
     if (!c || !c.lista.length) return '';
     var vieram = c.lista.filter(function (m) { return m.veio; }).length;
@@ -632,6 +647,7 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
       '<div class="col" style="padding:10px 0 10px 6px"><span class="display" style="font-size:40px;line-height:1">' + semDono + '</span><span class="mono-s">Papéis sem dono</span></div></div>' +
       (L.pendentes.length ? '<div class="bloco-preto"><span class="mono lime">Pedidos para entrar (' + L.pendentes.length + ')</span>' + pend + '</div>' : '') +
       chamadaHtml(L.chamada) +
+      staffHtml(d.staff, L.membros) +
       '<div style="position:relative"><h2 class="display" style="font-size:52px">Sentindo<br>a falta</h2><span class="sticker" style="position:absolute;right:4px;top:6px;transform:rotate(6deg);background:var(--red);color:#fff">2+ FALTAS</span></div>' +
       '<div class="bloco-preto" style="padding:4px 14px">' + falta + '</div>' +
       '<form data-form="missao" class="caixa"><span class="mono">Missão da semana</span>' +
@@ -784,6 +800,14 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
         d.lider.chamada.lista.forEach(function (m) { if (m.id === id) m.veio = !atual; });
       }, null);
     },
+    staff: function (el) {
+      var id = el.dataset.id, on = el.getAttribute('aria-pressed') === 'true';
+      acaoRapida('staff', { id: id, servir: !on }, function (d) {
+        if (on) d.staff.lista = d.staff.lista.filter(function (x) { return x.id !== id; });
+        else d.staff.lista.push({ id: id, nome: (d.lider.membros.filter(function (m) { return m.id === id; })[0] || {}).nome || '' });
+        d.staff.souEu = d.staff.lista.some(function (x) { return x.id === d.eu.id; });
+      }, null);
+    },
     'sortear-honrado': function () { acaoPainel('sortear_honrado', {}, 'Honrado sorteado!'); },
     'definir-genero': function (el) { acaoPainel('genero', { id: el.dataset.id, genero: el.dataset.v }, 'Salvo. As duplas já foram refeitas.'); },
     ir: function (el) { S.tela = el.dataset.tela; S.codigo = null; render(); window.scrollTo(0, 0); atualizarAoNavegar(); },
@@ -840,6 +864,7 @@ nav.menu button.ativo{background:var(--lime);color:var(--ink)}
     linhas.push('', '*Confirmados (' + vai.length + '/' + d.presenca.total + ')*: ' + (vai.join(', ') || 'ninguém ainda'));
     if (d.lanche.length) linhas.push('', '*Lanche*', d.lanche.map(function (x) { return primeiroNome(x.nome) + ': ' + [x.comida, x.bebida].filter(Boolean).join(' + '); }).join('\n'));
     if (d.missao) linhas.push('', '*Missão da semana:* ' + d.missao.texto);
+    if (d.staff && d.staff.lista.length) linhas.push('', '*Staff do culto (' + DIAS[diaSemana(d.staff.data)].toLowerCase() + ' ' + dataBR(d.staff.data) + '):* ' + d.staff.lista.map(function (x) { return primeiroNome(x.nome); }).join(', '));
     linhas.push('', 'Marque sua presença no app do Kairós: ' + location.href.split('#')[0].split('?')[0]);
     return linhas.join('\n');
   }
